@@ -1,0 +1,40 @@
+		<form class="span4">			
+			<div id="status"></div>
+			
+			<div class="row">
+				<div class="controls">
+					<label>Username : </label>
+					<input type="text" class="span4" placeholder="Enter username." value="{{username}}" id="username" />
+				</div>
+				<div class="controls">
+					<label>Access Level : </label>
+					<select id='permission'>
+						{{#select permission}}
+						<option value='1'>1 - Encode</option>
+						<option value='2'>2 - Update</option>
+						<option value='3'>3 - Administrator</option>
+						{{/select}}
+					</select>
+				</div>
+			</div>
+			<div class='row'>
+				<div class="controls pull-right row">
+					<button class="btn btn-primary" type="button" id="btnSave">Update User</button>				
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="controls">
+					<label>Password : </label>
+					<input type="password" class="span3" placeholder="Enter new password." id="password" />										
+					<label>Re-type Password : </label>
+					<input type="password" class="span3" placeholder="Retype Password." value="" id="password2" />										
+				</div>				
+			</div>
+						
+			<div class="controls pull-right row">
+				<button class="btn btn-primary" type="button" id="btnSavePassword">Change Password</button>				
+				<button class="btn btn-primary hide" type="button" id="btnSaveNew">Save User</button>				
+			</div>
+			
+		</form>

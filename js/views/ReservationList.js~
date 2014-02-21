@@ -1,0 +1,322 @@
+//boilerplate
+define([
+	'jquery',
+	'underscore',
+	'backbone',
+	'handlebars',
+	'libs/jquery/jqueryui',
+	'libs/tipsy/jquery.tipsy',
+	//collection & models
+	'collections/reservations',
+	'models/reservation',
+	'collections/checkins',
+	//template
+	'text!templates/reservations.html',
+	'text!templates/reservationInfoHover.html',
+	//views
+	'views/ReservationListItem',
+	'views/ReservationDetails',
+	'views/CheckinInfo'
+], function($, _, Backbone, Handlebars, $ui, Tipsy, ReservationCollection, ReservationModel, CheckinCollection, txtTemplate, txtTemplateResInfo, ReservationListItem, ReservationDetailView, CheckinInfoView) {
+
+	var ReservationListView = Backbone.View.extend({
+		//el: $('#main-content'),
+		tagName : 'div',
+		initialize : function() {
+			this.collection = new ReservationCollection();
+			this.checkins = new CheckinCollection();
+			//this.showList();
+			this.maxDays = 22;		//set default value for number of days to show
+			this.dateStart = new Date();
+			this.dateStart.setHours(0, 0, 0, 0);
+			
+			this.dateEnd = new Date();
+			this.dateEnd.setDate(this.dateStart.getDate() + this.maxDays);
+			this.dateEnd.setHours(0, 0, 0, 0);
+			//this.loadList();
+			
+			
+			//var for setting date of room blockings
+			this.dayOffset = 1;
+		},
+		render : function() {			
+			var self = this;									
+			var template = Handlebars.compile(txtTemplate);
+			var html = template({});
+			this.$el.html(html);
+			this.prepareTable();		//create the contents of thead and structure of tbody			
+			//this.collection.sort();
+			//this.showList();
+			//this.loadList();
+			//set date pickers
+			$("#cinFrom", this.$el).datepicker({ "changeMonth" : true, "changeYear": true, setDate : new Date()});
+			//$("#cinTo", this.$el).datepicker({ "changeMonth" : true, "changeYear": true});				
+			return this;
+		},
+		events : {
+			"click button#btnNew": "newReservation",
+			//"change #viewCheckins": "changeViewList",
+			"click button#btnRefresh" : "refreshList",
+			"click button#btnToday" : "showToday",
+			"click button#btnPrev" : "showPrevious",
+			"click button#btnNext" : "showNext",
+			"click button#btnPrint" : "print"
+		},
+		newReservation: function() {			
+			var reservationModel = new ReservationModel();
+			if (typeof this.reservationDetailView !== 'undefined') this.reservationDetailView.undelegateEvents();				
+			this.reservationDetailView = new ReservationDetailView({model : reservationModel});
+			this.reservationDetailView.render();
+			$('#main-content').append(this.reservationDetailView.el);
+			this.$el.hide();
+			var self = this;
+			this.reservationDetailView.on('closeReservation', function() {
+					this.off("closeReservation");
+					this.close();
+					self.prepareTable();
+					self.$el.show();
+				});
+
+			this.reservationDetailView.on('reservationSuccess', function(model) {
+					this.off("reservationSuccess");
+					this.close();
+					self.collection.add(reservationModel);
+					self.render();
+					self.$el.show();
+				});
+		},
+		prepareTable : function() {
+			$('table thead', this.$el).empty();
+			
+			var monthNames = new Array('JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER');
+			
+			var head = '';
+			var cdate = new Date(this.dateStart.getTime());						
+			var str = monthNames[this.dateStart.getMonth()] + " " + this.dateStart.getFullYear();			
+			if (this.dateStart.getMonth() != this.dateEnd.getMonth() || this.dateStart.getFullYear() != this.dateEnd.getFullYear()) {
+				str = monthNames[this.dateStart.getMonth()] + " " + this.dateStart.getFullYear() + " - " + monthNames[this.dateEnd.getMonth()] + "  " + this.dateEnd.getFullYear();
+			}
+			
+			var perc = "4%";
+			head = "<tr><th width='' align='center'></th><th style='text-align: center;' colspan='" + this.maxDays + "'>" + str + "</th>";
+			head += '<tr><th width="" align="center">RM#</th>';
+			for (a=0;a<this.maxDays;a++) {			
+				var month = cdate.getMonth() + 1;
+				var day = cdate.getDate();
+				var year = cdate.getFullYear().toString().substring(2, cdate.getFullYear().length);					
+				head += '<th width="' + perc + '"  style="text-align: center;"><span>' +  day + '</span></th>';
+				cdate.setDate(cdate.getDate() + 1);
+			}
+			head += '</tr>';
+			$('table thead', this.$el).append(head);
+			
+			var self = this;
+			$.getJSON("php/getRooms.php", function(data, status, jqXHR) {
+				$('table tbody', self.$el).empty();				
+				$.each(data, function(index, value) {
+					var html = "";					
+					html = '<tr id="' + value.roomNo + '"><td width="10%">' + value.roomNo + '</td>';
+					for (a=0;a<self.maxDays;a++) {
+						html += '<td width="3%"></td>';
+					}					
+					html += '</tr>';										
+					$('table tbody', self.$el).append(html);					
+				});
+				self.loadList();
+			});
+		},		
+		changeViewList : function(event) {
+			this.showList();
+		},
+		loadList : function(args) {		
+			//~ var c_stat = "IN";
+			var self = this;
+			var month = this.dateStart.getMonth() + 1;
+			var day = this.dateStart.getDate();
+			var year = this.dateStart.getFullYear();			
+			var from = month + "/" + day + "/" + year;			
+			month = this.dateEnd.getMonth() + 1;
+			day = this.dateEnd.getDate();
+			year = this.dateEnd.getFullYear();
+			var to = month + "/" + day + "/" + year;
+			
+			var filter = {cinFrom : from, cinTo : to, status : 'IN'};
+			this.collection.fetch({
+				data : filter,
+				"wait": true,
+				"success": function(collection, response, options) {					
+					self.collection = collection;
+					self.showList({
+						src : self.collection, 
+						css : {'background' : '#386DA2'}
+					});
+				}
+			});										
+			
+			
+			filter.FOR_BLOCKINGS = 1;
+			
+			this.checkins.fetch({
+				data : filter,
+				"wait": true,
+				"success": function(collection, response, options) {					
+					self.checkins = collection;
+					self.showList({						
+						src : self.checkins,
+						css : {'background' : '#FFCE00'}
+					});
+				}
+			});
+		},
+		refreshList : function(event) {
+			event.preventDefault();			
+			if (_.isEmpty($("#cinFrom").val())) {
+			} else {
+				this.dateStart = new Date($("#cinFrom").val());
+				this.dateStart.setHours(0, 0, 0, 0);				
+				this.dateEnd = new Date(this.dateStart.toString());
+				this.dateEnd.setDate(this.dateEnd.getDate() + this.maxDays);
+			}
+			this.prepareTable();
+		},
+		showList : function(arg) {
+			var self = this;
+			var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
+			var diffDays = 0;
+			var counter = 0;			
+		
+			arg.src.each(function(res) {				
+				counter = 0;
+				markSD = new Date(res.get('checkIn'));
+				markED = new Date(res.get('checkOut'));		
+				//console.log(css.background + " - " + markSD);				
+				if (markSD.getTime() < self.dateStart.getTime()) {					
+					markSD = new Date(self.dateStart.getTime());
+				} else if (markSD.getTime() === self.dateStart.getTime()) {
+					counter = 0;
+					//~ console.log("same date");
+				} else {
+					diffDays = markSD.getTime() - self.dateStart.getTime();
+					counter = Math.round(diffDays/1000/60/60/24);													
+				}								
+				
+				if (markED.getTime() > self.dateEnd.getTime()) markED = new Date(self.dateEnd.getTime());				
+				
+				if (markSD.getTime() <= self.dateEnd.getTime() && markED.getTime() >= self.dateStart.getTime() && counter < self.maxDays) {
+					while (markSD <= markED) {										
+						counter += 1;
+						var td = $("tr#" + res.get("roomNo") + " td:eq(" + counter + ")", self.$el);						
+						$(td).tipsy({ html : true, fade : true});
+						var template = Handlebars.compile(txtTemplateResInfo);
+						var html = template(res.toJSON());
+			
+						if (res.get('status') == 'RES') {							
+							td.css(arg.css).attr('title', html);
+							td.click(function(event) {
+								self.openReservation({model : res});
+							});						
+						} else {							
+							if (res.get('status') == 'OUT') {
+								td.css({'background' : '#dddddd'}).attr('title', html);
+							} else {								
+								td.css(arg.css).attr('title', html);
+							}
+							td.click(function(event) {
+								self.openCheckin({model : res});
+							});						
+						}
+						markSD.setDate(markSD.getDate() + 1);							
+					}
+				}
+					
+					
+			});
+		},
+		openReservation: function(arg) {			
+			var reservationModel = arg.model;
+			if (typeof this.reservationDetailView !== 'undefined') {
+				this.reservationDetailView.undelegateEvents();
+				delete this.reservationDetailView;
+			}				
+			
+			this.reservationDetailView = new ReservationDetailView({model : reservationModel, op : 'update'});
+			this.reservationDetailView.render();
+			$('#main-content').append(this.reservationDetailView.el);
+			this.$el.hide();
+			var self = this;
+			this.reservationDetailView.on('closeReservation', function() {
+					this.off("closeReservation");
+					this.close();
+					self.prepareTable();
+					self.$el.show();
+				});
+
+			this.reservationDetailView.on('reservationSuccess', function(model) {
+					this.off("reservationSuccess");
+					this.close();
+					self.collection.add(reservationModel);
+					self.render();
+					self.$el.show();
+				});
+		},
+		openCheckin: function(arg) {			
+			var checkinModel = arg.model;
+			if (typeof this.checkinInfoView !== 'undefined') this.checkinInfoView.undelegateEvents();				
+			this.checkinInfoView = new CheckinInfoView({model : checkinModel});
+			this.checkinInfoView.render();
+			$('#main-content').append(this.checkinInfoView.el);
+			this.$el.hide();
+			var self = this; 
+			this.checkinInfoView.on('closeCheckinInfo', function() {
+					this.off("closeCheckinInfo");
+					this.close();
+					self.prepareTable();
+					self.$el.show();
+				});
+				
+				
+		},
+		showPrevious : function() { 
+			this.dateStart.setDate(this.dateStart.getDate() - this.dayOffset);
+			this.dateStart.setHours(0, 0, 0, 0);				
+			this.dateEnd = new Date(this.dateStart.getTime());
+			this.dateEnd.setDate(this.dateEnd.getDate() + this.maxDays);
+			
+			this.prepareTable();
+		},
+		showNext : function() { 
+			this.dateStart.setDate(this.dateStart.getDate() + this.dayOffset);
+			this.dateStart.setHours(0, 0, 0, 0);				
+			this.dateEnd = new Date(this.dateStart.getTime());
+			this.dateEnd.setDate(this.dateEnd.getDate() + this.maxDays);
+			
+			this.prepareTable();
+		},
+		showToday : function(event) {
+			event.preventDefault();
+			var d = new Date();
+			$("#cinFrom").val((d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear());
+			this.refreshList(event);
+		},
+		print : function() {
+			var w = window.open();
+			var html = $("table#blockings").clone().find("button").remove().end().html();						
+			html = "<table class='table table-striped table-hover table-bordered' id='blockings'>" + html + "</table>";
+			var init = "<!DOCTYPE html>";
+			init += "<html>";
+			init += "<head><title>Room Blockings (Reservations and Checkins)</title><link type='text/css' href='http://localhost/aman/res/bootstrap/css/bootstrap.css' rel='stylesheet' /></head>";
+			init += "<body><div class='container' id='body'>" + html + "</div></body>";
+			init += "</html>";
+			$(w.document.body).append(init);
+			w.print();
+		},
+		onClose : function() {
+			//~ if (this.checkinDetailView) {
+				//~ this.checkinDetailView.close();
+			//~ }
+		}
+	});
+	
+	return ReservationListView;
+
+});

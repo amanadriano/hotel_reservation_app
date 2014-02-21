@@ -1,0 +1,256 @@
+//boilerplate
+define([
+	'jquery',
+	'underscore',
+	'backbone',
+	'handlebars',
+	//model & collection
+	'models/checkin',
+	'models/charge',
+	'collections/charges',
+	//template
+	'text!templates/checkinInfo.html',
+	//views
+	'views/ChargeListItem',
+	'views/ChargeDetail',
+	'views/CheckinDetails'
+], function($, _, Backbone, Handlebars, CheckinModel, ChargeModel, ChargeCollection, txtTemplate, ChargeListItemView, ChargeDetailView, CheckinDetailView) {
+	var CheckinInfoView = Backbone.View.extend({
+		initialize : function(options) {
+			this.model = options.model;
+			this.totalCharges = 0.0;
+			this.cutOff = {'hour' : 12, 'minute' : 00};	//cutoff time for checkout 12:00 PM (noon) default
+			this.charges = new ChargeCollection();
+			//fetch charges for this checkin
+			this.refreshCharges();			
+		},		
+		render : function() {
+			var template = Handlebars.compile(txtTemplate);
+			var html = template(this.model.toJSON());
+			this.$el.html(html);
+			return this;
+		},
+		events : {
+			"click button#close": "closeView",
+			"click button#btnNewCharge": "addCharge",
+			"click button#checkout": "checkOut",
+			"click button#update": "updateCheckin",
+			"click button#btnRefreshCharges" : "refreshCharges",
+			"click button#delete" : "deleteCheckin"
+		},
+		closeView : function() {
+			this.trigger("closeCheckinInfo");
+		},
+		renderCharges : function() {
+			if (this.model.get("status") == "OUT") this.guestIsOut();
+			
+			this.totalCharges = 0.0;
+			var self = this;
+			var recurr = new ChargeCollection();
+			this.ch = new ChargeCollection();
+			$("table#chargesTable tbody", this.$el).empty();
+			this.charges.each(function(charge) {
+				if (recurr.length > 0) {
+					var initdate = new Date(recurr.at(0).get("date"));
+					var lastdate = new Date(charge.get("date"));
+					
+					while (initdate < lastdate) {
+						recurr.each(function(c) {
+							//update all dates of recurr model to lastdate
+							var day = initdate.getDate();
+							var month = initdate.getMonth() + 1;
+							var year = initdate.getFullYear();
+							c.set({date : month + "/" + day + "/" + year + " " + initdate.getHours() + ":" + initdate.getMinutes()});
+							self.addListItemShow(c, 1);	
+						});
+						//add 1 day to to initdate
+						initdate.setDate(initdate.getDate()+1);
+					}
+					//update all dates of recurr model to lastdate
+					var day = initdate.getDate();
+					var month = initdate.getMonth() + 1;
+					var year = initdate.getFullYear();
+					recurr.each(function(c) {						
+						c.set({date : month + "/" + day + "/" + year + " " + initdate.getHours() + ":" + initdate.getMinutes()});
+					});
+				}
+								
+				if (charge.get("action") == "1") {					
+					var update = false;
+					recurr.every(function(c) {
+						if (charge.get("name") == c.get("name")) {							
+							c.set({qty : c.get("qty") + charge.get("qty")});
+							c.set({amount : c.get("amount") + charge.get("amount")});
+							update = true;
+							return false;
+						} 
+					});
+					if (!update) {
+						recurr.add(charge);
+					}
+				} else if (charge.get("action") == "2") {
+					recurr.each(function(c) {
+						if (charge.get("name") == c.get("name")) {	
+							c.set({qty : c.get("qty") - charge.get("qty")});
+							c.set({amount : c.get("amount") - charge.get("amount")});
+							if(c.get("qty") < 1) recurr.remove(c);
+						}
+					});					
+					self.addListItemShow(charge);
+				} else if (charge.get("action") == "3") {			//payment recieved					
+					self.addListItemShow(charge);
+				} else {
+					self.addListItemShow(charge);
+				}
+										
+			});
+				//check for current cutOff({hour, minute}) if we should include the current day
+				if (recurr.length > 0) {
+					var initdate = new Date(recurr.at(0).get("date"));
+					var lastdate = new Date();
+					var outDate = new Date(this.model.get("checkOut"));
+			
+					if (this.model.get("status") == "OUT") {
+						lastdate = outDate;
+					}
+					
+					lastdate.setHours(0,0,0,0);
+					while (initdate < lastdate) {
+						//update all dates of recurr model to lastdate						
+						recurr.each(function(c) {							
+							c.set("date", initdate.toString());
+							self.addListItemShow(c, 1);
+						});
+						//add 1 day to to initdate
+						initdate.setDate(initdate.getDate()+1);
+					}
+				}							
+							
+			//print total charges		
+			var myTotal = this.totalCharges / 100;
+			$('#totalAmount', this.$el).html(myTotal.formatMoney());
+			
+		},
+		addListItemShow : function(charge, type) {
+			var t = 0;
+			if (typeof type != 'undefined') {
+				t = type;
+			} else {
+				t = 0;
+			}
+			//entry to show to the user ===============================
+			//create list item VIEW for each charge so we can control each item
+			//set format, compute total, set events for each item.
+			var d = new Date(charge.get("date"));
+			var day = d.getDate();
+			var month = d.getMonth() + 1;
+			var year = d.getFullYear();
+			charge.set("date", month + "/" + day + "/" + year + " " + d.getHours() + ":" + d.getMinutes());
+			this.ch.add(charge);
+			var x = new ChargeListItemView({ model : charge, 'type' : t, status : this.model.get("status") });
+			$("table#chargesTable tbody", this.$el).append(x.render().el);			
+			//compute total charges
+			var amount = charge.get("amount");
+			if (charge.get('action') == 3) amount *= -1;
+			this.totalCharges += parseInt(amount);
+			var self = this;
+			x.on("updateCharge", function() {
+				self.refreshCharges();
+			});
+			//=========================================================
+		},
+		refreshCharges : function() {			
+			var self = this;
+			this.charges.fetch({
+				data : { checkinId : self.model.id },
+				"wait": true,
+				"success": function(collection, response, options) {					
+					self.renderCharges();
+				}
+			});
+		},
+		addCharge : function() {
+			var self = this;
+			if (this.nCharge !== undefined) return false;
+			this.nCharge = new ChargeDetailView({ model : new ChargeModel({checkinId : self.model.get("id")}), op : 'new' });
+			$("div#newChargeHolder table tbody", this.$el).append(self.nCharge.render().el);
+			$("div#newChargeHolder").fadeIn();
+			self.nCharge.on("cancelUpdate", function() {
+				$("div#newChargeHolder").fadeOut(function() { 
+					self.nCharge.close(); 
+					delete self.nCharge;
+				});				
+			});
+			
+			self.nCharge.on("saveUpdate", function() {
+				$("div#newChargeHolder").fadeOut(function() { 
+					self.nCharge.close();
+					delete self.nCharge;
+					self.refreshCharges();
+				});
+			});
+			
+			return false;
+		},
+		checkOut : function(event) {
+			if (this.totalCharges > 0) {				
+				$("div#checkinStatus", this.$el).stop(1, 1).html("Guest has a pending due of <strong>Php " + (this.totalCharges / 100).formatMoney(2, "") + "</strong>. Please settle it first before checking out.").fadeIn().delay(5000).fadeOut();
+				return;
+			}
+			//check out guest
+			if (!confirm("Guest has no pending charges. Proceed with check out?")) return;
+			//proceed with checkout
+			var self = this;
+			var d = new Date();
+			var day = d.getDate();
+			var month = d.getMonth() + 1;
+			var year = d.getFullYear();
+			this.model.save(
+				{
+					status: "OUT", checkOut : month + "/" + day + "/" + year + " " + d.getHours() + ":" + d.getMinutes()
+				}, {
+				success : function(model, response) {
+					self.guestIsOut();
+					self.render();
+					self.refreshCharges();
+				},
+				error : function(model, response) {
+				}
+			});
+		},
+		guestIsOut : function() {
+			$("button#checkout", this.$el).hide();
+			$("button#btnNewCharge", this.$el).hide();
+		},
+		updateCheckin : function() {
+			var self = this;
+			var checkinDetailView = new CheckinDetailView({ model : this.model, op : 'update' });
+			this.$el.hide();
+			$('#main-content').append(checkinDetailView.render().el);
+			
+			checkinDetailView.on("closeCheckin", function() {
+				this.close();
+				self.$el.show();
+			});
+			
+			checkinDetailView.on("updateCheckin", function() {
+				this.close();
+				self.render();
+				self.refreshCharges();
+				self.$el.show();	
+			});
+			
+		},
+		deleteCheckin : function() { 
+			if (!confirm("Remove checkin record?")) return;
+			var self = this;
+			this.model.destroy({
+				success : function(model, response) {
+					self.trigger("closeCheckinInfo");
+				}
+			});
+		}
+	});
+	
+	return CheckinInfoView;
+});

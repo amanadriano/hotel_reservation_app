@@ -1,0 +1,30 @@
+		<form class="span8">			
+			<div id="status"></div>
+			
+			<div class="row">
+				<div class="controls span4">
+					<label>Guest Name : </label>
+					<input type="text" class="span4" placeholder="Enter guest's fullname." value="{{fullname}}" id="fullname" />
+					<label>Citizenship : </label>
+					<input type="text" class="span3" placeholder="Enter guest's citizenship." value="{{citizenship}}" id="citizenship" />
+					<label>Date of Birth : </label>
+					<input type="text" class="span3 dob" placeholder="Enter guest's Date of Birth." value="{{dob}}" id="dob" />
+					<label>Contact # : </label>
+					<input type="text" class="span3" placeholder="Enter guest's contact number." value="{{contact_no}}" id="contact_no" />
+				</div>
+				<div class="controls offset4">
+					<label>Email Address : </label>
+					<input type="text" class="span3" placeholder="Enter guest's email address." value="{{email}}" id="email" />						
+					<label>Company : </label>
+					<input type="text" class="span4" placeholder="Enter guest's company." value="{{company}}" id="company" />
+					<label>Position in Company : </label>
+					<input type="text" class="span4" placeholder="Enter guest's contact number." value="{{position}}" id="position" />
+				</div>
+			</div>
+			
+			<div class="controls pull-right row">
+				<button class="btn btn-primary" type="submit" id="btnSave">Save</button>
+				<button class="btn" type="button" onclick="false" id="btnClear">Clear</button>
+			</div>
+			
+		</form>

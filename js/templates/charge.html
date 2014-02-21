@@ -1,0 +1,38 @@
+<form>
+	<td align='left'>		
+		<select id='name' class='span2'>			
+			{{#select name}}			
+				<option value="Room Charge">Room Charge</option>
+				<option value="Restaurant">Restaurant</option>
+				<option value="Extra Pillows">Extra Pillows</option>
+				<option value="Extra Bed">Extra Bed</option>
+				<option value="Mini Bar">Mini Bar</option>
+				<option value="Payment">Payment</option>
+				<option value="Deposit">Deposit</option>
+			{{/select}}
+		</select>				
+	</td>
+	<td align='left'>
+		<input type='text' id='description' value='{{description}}' style="width: 100%;"  />
+		<strong>Type/Action</strong><br />
+		<select id='action'>
+			{{#select action}}
+			<option value='0'>N/A</option>
+			<option value='1'>Recurring Charge</option>
+			<option value='2'>Returned Charge</option>
+			<option value='3'>Payment</option>
+			{{/select}}
+		</select>
+	</td>
+	<td align='center'><input type='text' id='date' value='{{date}}' class='span2'  /></td>
+	<td align='center'><input type='text' id='qty' value='{{qty}}' style="width: 100%;"  /></td>
+	<td align='right' style='text-align: right;'>
+		<input type='text' id='qty_cost' value='{{toDecimal qty_cost}}' style="width: 100%;"  />
+		<br /><button id='btnCancel' class='btn'>Cancel</button>
+	</td>
+	<td align='right' style="width: 100%;" >
+		<input type='text' id='amount' value='{{toDecimal amount}}'  class='span1 text-right' disabled='disabled' />
+		<br />
+		<button id='btnSave' type='submit' class='btn btn-primary'>Save</button>
+	</td>
+</form>

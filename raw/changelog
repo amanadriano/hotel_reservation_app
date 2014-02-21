@@ -1,0 +1,16 @@
+V 0.9b
+- initial release
+
+
+V 1.0 - 06.16.2013
+- Fixed date of charges to "mm/dd/yyyy hh:mm" to allow javascript date creation like (new Date('01/31/2013 21:30'))
+
+V 1.1 -     06.18.2013
+- change reservations storage to checkins table and use 'RES' as marker for reservation records on checkins table
+- enabled deposit entry on reservation records
+- reservation records are shown on checkin records 
+TODO
+- reservation report
+- checkin report
+- collection report
+- deposit report?

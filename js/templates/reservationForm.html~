@@ -1,0 +1,78 @@
+<h3>Reservation Form</h3>
+		<form class="well form-horizontal span10">
+			<div id="status"></div>
+
+			<div class="row">
+				<div class="spann9 control-group">
+					<label class="control-label" for="checkIn">Check In/Out : </label>
+					<div class='controls'>
+						<input type="text" class="span2" placeholder="" value="{{checkIn}}" id="checkIn" />
+						<label class="label label-important"> TO </label>
+						<input type="text" class="span2" placeholder="" value="{{checkOut}}" id="checkOut" />
+						<button type="button" id="btnRefresh" class="btn btn-warning">Check Availability <i class='icon-refresh'></i></button>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="span9 control-group" id="roomInfo">					
+					<label class="control-label" for="room">Available Room(s) : </label>
+					<div class="controls">
+						<select id='room' class='span1'>							
+						</select>
+					</div>
+				</div>
+				<div class="span9 control-group">					
+					<label class="control-label">Room Infomation : </label>
+					<div class="controls">
+						<div id="room-information">
+							<div id="roomPriceDiv" class="hide">
+								<span>Room Price :</span>
+								<input id="roomPrice" type="text" class="span3" value="{{toDecimal roomPrice}}" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="row">
+				<p class="offset2 text-info">Choose a guest from your existing guest list or create a new record for this guest.</p>				
+				<div class="span9 control-group">										
+					<label class="control-label" for="fullname">Guest Name : </label>
+					<div class="controls">
+						<input type='text' class='span4' placeholder="Guest's Name" value="{{fullname}}" id="fullname" />				
+						<button class="btn" type="button" id="btnChooseGuest" onclick="false">Choose ...</button>						
+					</div>
+				</div>
+
+				<div class="span9 control-group">
+					<label class="control-label" for="pax"># of Pax (Adult) : </label>
+					<div class="controls">
+						<input type="text" class="span1" value="{{pax}}" id="pax" />
+					</div>
+				</div>
+
+				<div class="span9 control-group">
+					<label class="control-label" for="children"># of Children : </label>
+					<div class="controls">
+						<input type="text" class="span1" value="{{children}}" id="children" />
+					</div>
+				</div>
+
+				<div class="span9 control-group">
+					<label class="control-label" for="children">Amount of Deposit : </label>
+					<div class="controls">
+						<input type="text" class="span2" value="{{toDecimal deposit}}" id="deposit" />
+					</div>
+				</div>
+				
+			</div>																					
+				
+			<div class="controls pull-right">
+				<button class="btn btn-primary" type="submit" id="btnSave">Save Reservation <i class='icon-home'></i></button>
+				<button class="btn btn-primary hide" type="submit" id="btnUpdate">Update Resevation <i class='icon-ok'></i></button>
+				<button class="btn btn-success hide" id="btnCheckin">Check In <i class='icon-ok'></i></button>
+				<button class="btn" type="button" id="btnCancel">Cancel</button>
+			</div>
+			<button class="btn btn-danger hide" id="btnDelete">Delete Resevation <i class='icon-remove'></i></button>
+			
+		</form>

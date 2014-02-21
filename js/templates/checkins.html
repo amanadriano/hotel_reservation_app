@@ -1,0 +1,42 @@
+<div class="form-horizontal">	
+	<form class="form-search span4">
+		<button type="button" class="btn btn-primary" id="btnNew">Check In <i class='icon-home'></i></button>
+		<span class="label label-info"> Click to check in your guest. </span>
+	</form>	
+	<form class="form-search offset7">
+		<span class="label label-info">Currently showing : </span>
+		<select id='viewCheckins'>
+			<option id="btnCurrent" value="1">Current Guests</option>	
+			<option id="btnArchive" value="2">Archive</option>
+		</select>	
+	</form>
+	<div id="divFilter" class='hide well'>		
+		<p class="text-info">Filter :</p>
+		<p>
+		<span class="label label-info">Checked in from </span>
+		<input type='text' id='cinFrom' class='span2' />
+		<span class="label label-info"> to </span>
+		<input type='text' id='cinTo' class='span2' />
+		
+		<span class='label label-info offset1'>Guest Name : </span>
+		<input type='text' id='cinName' class='span3' />
+		</p>
+		<button class='btn' id='btnClearDates'>Clear Filter</button>
+		<button class='btn btn-success offset8' id='btnRefresh'>Refresh</button>		
+	</div>
+</div>
+
+		<table class="table table-striped table-hover">
+			<thead>
+			<tr>
+				<th width="40%">Fullname</th>
+				<th width="10%" align='center'>Room #</th>
+				<th width="10%" align='center'>Check In</th>
+				<th width="10%" align='center'>Check Out</th>
+				<th width="10%" align='center'>PAX</th>
+				<th width="10%" align='center'>Status</th>
+			</tr>
+			</thead>
+			<tbody>						
+			</tbody>
+		</table>

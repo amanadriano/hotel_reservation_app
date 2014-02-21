@@ -1,0 +1,28 @@
+<div class="form-horizontal">	
+	<form class="form-search span4">
+		<button type="button" class="btn btn-primary" id="btnNew">Check In</button>
+		<span class="label label-info"> Click to check in your guest. </span>
+	</form>	
+	<form class="form-search offset7">
+		<span class="label label-info">Currently showing : </span>
+		<select id='viewCheckins'>
+			<option id="btnCurrent">Current Guests</option>	
+			<option id="btnArchive">Archive</option>
+		</select>	
+	</form>
+</div>
+
+		<table class="table table-striped table-hover">
+			<thead>
+			<tr>
+				<th width="40%">Fullname</th>
+				<th width="10%" align='center'>Room #</th>
+				<th width="10%" align='center'>Check In</th>
+				<th width="10%" align='center'>Check Out</th>
+				<th width="10%" align='center'>PAX</th>
+				<th width="10%" align='center'>Status</th>
+			</tr>
+			</thead>
+			<tbody>						
+			</tbody>
+		</table>

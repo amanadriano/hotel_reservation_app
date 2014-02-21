@@ -1,0 +1,124 @@
+[23-Dec-2012 06:26:57 UTC] TESTS : 3
+[23-Dec-2012 14:50:26 UTC] 6
+[25-Dec-2012 03:58:34 UTC] 3
+[25-Dec-2012 03:58:42 UTC] 3
+[25-Dec-2012 03:58:58 UTC] 3
+[25-Dec-2012 04:15:36 UTC] 3
+[25-Dec-2012 06:45:48 UTC] 4
+[25-Dec-2012 07:00:55 UTC] 3
+[25-Dec-2012 07:01:05 UTC] 3
+[25-Dec-2012 07:01:05 UTC] 3
+[25-Dec-2012 07:04:30 UTC] 4
+[25-Dec-2012 07:05:00 UTC] 4
+[25-Dec-2012 07:05:08 UTC] 4
+[25-Dec-2012 07:05:08 UTC] 3
+[25-Dec-2012 07:07:50 UTC] 3
+[25-Dec-2012 07:09:19 UTC] 3
+[25-Dec-2012 07:09:27 UTC] 3
+[25-Dec-2012 07:09:34 UTC] 4
+[25-Dec-2012 07:09:42 UTC] 4
+[25-Dec-2012 07:10:10 UTC] 3
+[25-Dec-2012 07:11:00 UTC] 4
+[25-Dec-2012 07:11:05 UTC] 4
+[25-Dec-2012 07:11:10 UTC] 3
+[25-Dec-2012 07:19:01 UTC] 4
+[25-Dec-2012 07:19:15 UTC] 5
+[25-Dec-2012 07:19:21 UTC] 5
+[25-Dec-2012 07:19:26 UTC] 5
+[25-Dec-2012 10:45:38 UTC] 5
+[25-Dec-2012 10:58:23 UTC] 3
+[25-Dec-2012 10:59:27 UTC] 5
+[25-Dec-2012 10:59:40 UTC] 5
+[25-Dec-2012 10:59:47 UTC] 5
+[25-Dec-2012 10:59:47 UTC] 5
+[25-Dec-2012 10:59:59 UTC] 5
+[25-Dec-2012 10:59:59 UTC] 5
+[25-Dec-2012 10:59:59 UTC] 4
+[25-Dec-2012 11:00:06 UTC] 5
+[25-Dec-2012 11:00:06 UTC] 5
+[25-Dec-2012 11:00:06 UTC] 4
+[25-Dec-2012 11:00:06 UTC] 4
+[25-Dec-2012 11:00:09 UTC] 5
+[25-Dec-2012 11:00:09 UTC] 5
+[25-Dec-2012 11:00:09 UTC] 4
+[25-Dec-2012 11:00:09 UTC] 4
+[25-Dec-2012 11:00:09 UTC] 5
+[25-Dec-2012 11:00:12 UTC] 5
+[25-Dec-2012 11:00:12 UTC] 5
+[25-Dec-2012 11:00:12 UTC] 4
+[25-Dec-2012 11:00:12 UTC] 4
+[25-Dec-2012 11:00:12 UTC] 5
+[25-Dec-2012 11:00:12 UTC] 4
+[25-Dec-2012 11:00:16 UTC] 5
+[25-Dec-2012 11:00:16 UTC] 5
+[25-Dec-2012 11:00:16 UTC] 4
+[25-Dec-2012 11:00:16 UTC] 4
+[25-Dec-2012 11:00:16 UTC] 5
+[25-Dec-2012 11:00:16 UTC] 4
+[25-Dec-2012 11:00:16 UTC] 3
+[25-Dec-2012 11:05:14 UTC] 3
+[25-Dec-2012 11:05:21 UTC] 4
+[25-Dec-2012 11:05:27 UTC] 3
+[25-Dec-2012 13:50:56 UTC] 8
+[25-Dec-2012 13:54:12 UTC] 9
+[25-Dec-2012 13:54:26 UTC] 9
+[25-Dec-2012 13:55:55 UTC] 10
+[25-Dec-2012 13:56:00 UTC] 10
+[25-Dec-2012 13:56:15 UTC] 9
+[25-Dec-2012 14:04:14 UTC] 9
+[25-Dec-2012 14:04:20 UTC] 9
+[25-Dec-2012 14:10:55 UTC] 9
+[25-Dec-2012 14:15:43 UTC] 10
+[25-Dec-2012 14:16:01 UTC] 9
+[25-Dec-2012 14:16:06 UTC] 10
+[25-Dec-2012 14:18:24 UTC] 12
+[25-Dec-2012 14:18:27 UTC] 12
+[25-Dec-2012 14:22:17 UTC] 4
+[25-Dec-2012 14:22:25 UTC] 4
+[25-Dec-2012 14:36:32 UTC] 10
+[25-Dec-2012 14:36:36 UTC] 10
+[26-Dec-2012 00:58:06 UTC] 5
+[26-Dec-2012 00:58:15 UTC] 4
+[26-Dec-2012 00:58:22 UTC] 10
+[26-Dec-2012 00:58:51 UTC] 11
+[26-Dec-2012 13:05:30 UTC] 11
+[26-Dec-2012 13:05:37 UTC] 11
+[26-Dec-2012 13:05:47 UTC] 4
+[26-Dec-2012 13:05:56 UTC] 4
+[26-Dec-2012 13:21:31 UTC] 4
+[26-Dec-2012 13:21:38 UTC] 11
+[29-Dec-2012 13:02:25 UTC] 4
+[29-Dec-2012 13:31:19 UTC] 4
+[06-Jan-2013 14:36:41 UTC] PHP Notice:  Undefined variable: result in /media/data/Projects/res/php/class.data.php on line 123
+[06-Jan-2013 14:36:41 UTC] PHP Notice:  Undefined variable: data in /media/data/Projects/res/php/checkAvailability.php on line 12
+[06-Jan-2013 14:37:15 UTC] PHP Notice:  Undefined variable: data in /media/data/Projects/res/php/checkAvailability.php on line 12
+[07-Jan-2013 08:37:57 UTC] 5
+[07-Jan-2013 08:37:59 UTC] 4
+[09-Jan-2013 10:10:42 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /media/data/Projects/res/php/class.data.php on line 127
+[09-Jan-2013 10:10:49 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /media/data/Projects/res/php/class.data.php on line 127
+[09-Jan-2013 10:13:35 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /media/data/Projects/res/php/class.data.php on line 140
+[09-Jan-2013 10:14:28 UTC] PHP Fatal error:  Call to a member function fetch_assoc() on a non-object in /media/data/Projects/res/php/class.data.php on line 147
+[09-Jan-2013 10:14:52 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 10:14:52 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 16:09:41 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 16:09:41 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 16:10:13 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 16:10:13 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 16:10:26 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 16:10:26 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 16:15:32 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 16:15:32 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 16:16:15 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 158
+[09-Jan-2013 16:16:15 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 158
+[09-Jan-2013 16:16:53 UTC] PHP Notice:  Use of undefined constant id - assumed 'id' in /media/data/Projects/res/php/class.data.php on line 158
+[09-Jan-2013 16:16:53 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 158
+[09-Jan-2013 16:16:53 UTC] PHP Notice:  Use of undefined constant id - assumed 'id' in /media/data/Projects/res/php/class.data.php on line 158
+[09-Jan-2013 16:16:53 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 158
+[09-Jan-2013 16:18:00 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 158
+[09-Jan-2013 16:18:00 UTC] PHP Notice:  Undefined index: id in /media/data/Projects/res/php/class.data.php on line 158
+[09-Jan-2013 16:19:48 UTC] PHP Notice:  Undefined index: roomId in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 16:19:48 UTC] PHP Notice:  Undefined index: roomId in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 16:22:28 UTC] PHP Notice:  Undefined index: roomId in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 16:22:28 UTC] PHP Notice:  Undefined index: roomId in /media/data/Projects/res/php/class.data.php on line 157
+[09-Jan-2013 16:22:51 UTC] PHP Notice:  Undefined index: roomId in /media/data/Projects/res/php/class.data.php on line 158
+[09-Jan-2013 16:22:51 UTC] PHP Notice:  Undefined index: roomId in /media/data/Projects/res/php/class.data.php on line 158

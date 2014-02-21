@@ -1,0 +1,19 @@
+//guest model
+define([
+	'underscore', 'backbone'
+], function(_, Backbone) {
+	var GuestModel = Backbone.Model.extend ({
+		defaults : {
+			fullname : "",
+			citizenship : "",
+			dob : "",
+			contact_no : "",
+			email : "",
+			company : "",
+			position : ""
+		},		
+		url : "../php/model.guest.php"
+	});
+
+	return GuestModel;
+});

@@ -1,0 +1,23 @@
+<div class="form-horizontal">	
+	<form class="form-search">
+		<input type="text" class="input-medium search-query span3" placeholder="Search guest's name" id="txtSearch">
+		<button type="submit" class="btn" id="btnSearch">Search</button>
+		<button type="button" class="btn btn-primary offset6" id="btnNew">New Guest</button>
+	</form>	
+</div>
+
+		<table class="table table-striped table-hover">
+			<thead>
+			<tr><th>Fullname</th><th>Contact #</th><th>E-mail</th><th></th></tr>
+			</thead>
+			<tbody>
+			{{#each guests}}
+			<tr class="data">
+				<td><a href="#/guest/{{id}}">{{fullname}}</a></td>
+				<td>{{contact_no}}</td>
+				<td>{{email}}</td>
+				<td><button type="button" class="btn btn-danger" id="btnRemove" style="display: none;"><i class="icon-remove"></i></button></td>
+			</tr>
+			{{/each}}					
+			</tbody>
+		</table>

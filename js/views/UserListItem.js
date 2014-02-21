@@ -1,0 +1,78 @@
+//VIEW list of guests
+define([
+	'jquery',
+	'underscore',
+	'backbone',
+	'handlebars',
+	//collection of guest models (guest collection)
+	'models/user',
+	//views
+	'views/UserDetails'
+], function($, _, Backbone, Handlebars, ModelUsers, UserDetailsView) {
+
+	var UserListViewItem = Backbone.View.extend({
+		tagName: "tr",
+		forChoosing : false,
+		initialize : function(options) {
+			var self = this;
+			this.model = options.model;
+			this.forChoosing = options.forChoosing;
+		},
+		render : function() {			
+			//set template using handlebars (todo)
+			var html = "<td><a href=''>" + this.model.get("username") + "</a></td>";
+			html += "<td>" + this.model.get("last_log") + "</td>";
+			html += "<td>" + this.model.get("date_created") + "</td>";
+			html += "<td>" + this.model.get("permission") + "</td>";
+			html += "<td width='50'><i class='icon-remove' style='display: none; cursor: pointer;' id='btnRemove'></i></td>";			
+			this.$el.html(html);
+			return this;			
+		},
+		events : {
+			"mouseover": "showRemoveButton",
+			"mouseout": "hideRemoveButton",
+			"click #btnRemove": "removeUser",
+			"click a": "viewUserDetails"
+		},
+		showRemoveButton: function() {
+			if (this.forChoosing) return;
+			$("#btnRemove", this.$el).show();
+		},
+		hideRemoveButton: function() {
+			$("#btnRemove", this.$el).hide();
+		},
+		removeUser: function() {
+			if (this.forChoosing) return;
+			if (!confirm("Delete this user from the database?")) return false;
+			var self = this;
+			this.model.destroy({
+				wait: true,
+				success: function(model, response) {
+					if (typeof self.userDetailsView !== 'undefined') self.userDetailsView.off('userChanged', this.render, this);
+					self.undelegateEvents();
+					self.$el.fadeOut("slow").remove();
+					self.trigger("userRemoved");
+				}
+			});
+			return false;
+		},
+		viewUserDetails: function(event) {			
+			event.preventDefault();			
+			this.userDetailsView = new UserDetailsView({model : this.model, operation : 'update'});
+			this.userDetailsView.on('userChanged', function() {
+					this.render();					
+				}, this);
+			this.userDetailsView.render();
+			$("#modalDiv .modal-body").html(this.userDetailsView.el);
+			return false;
+		},
+		onClose : function() {
+			if (this.guestDetailsView) {
+				this.guestDetailsView.close();
+			}
+		}
+	});
+	
+	return UserListViewItem;
+
+});

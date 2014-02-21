@@ -1,0 +1,635 @@
+<?php
+
+class DB_Class {
+
+	private $db_host = "localhost";
+	private $db_user = "root";
+	private $db_pwd = "test";
+	private $db_name = "res";
+	
+	public function strToDb($strVal) {
+		return htmlentities(htmlspecialchars(strip_tags($strVal)), ENT_QUOTES);
+	}
+	
+	public function strToHTML($strVal) {
+		return htmlspecialchars_decode(html_entity_decode($strVal));
+	}
+
+	public function toMysqlDateTime($date) {		
+		return date("Y-m-d H:i:s", strtotime($date));
+	}
+
+	public function toRegDate($date, $format = 'm/d/Y H:i') { //  e.g. 1/1/2012 16:45
+		return date($format, strtotime($date));
+	}
+
+	private function getLastId($con) {
+		$id = 0;
+		$res = $con->query("SELECT last_insert_id();");
+		if ($row = $res->fetch_array()) {
+			$id = $row[0];		//last insert id
+		}
+		$res->close();
+		return $id;
+	}
+	
+	public function createRoom($data) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("INSERT INTO rooms (roomNo, roomType, description, price) VALUES (?, ?, ?, ?)");
+		$res->bind_param("issi", $data->roomNo, $data->roomType, $this->strToDb($data->description), $data->price);
+		$res->execute();
+		$res->close();		
+		error_log($con->error);
+		$lastId = $this->getLastId($con);
+		$result = array('newId'=>$lastId, 'msg'=>$con->error);
+		$con->close();
+		return $result;
+	}
+	
+	public function updateRoom($data) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("UPDATE rooms set roomNo=?, roomType=?, description=?, price=? WHERE id = ?");
+		$res->bind_param("issii", $data->roomNo, $data->roomType, $this->strToDb($data->description), $data->price, $data->id);
+		$result = $res->execute();
+		$res->close();		
+		$con->close();
+		return $result;
+	}
+	
+	public function deleteRoom($id) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("DELETE FROM rooms WHERE id = ?");
+		$res->bind_param("i", $id);		
+		$result = $res->execute();
+		$res->close();		
+		$con->close();
+		return $result;
+	}
+	
+	public function getRoom($id) {
+	}
+	
+	public function getAllRooms($filter='') {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->query("SELECT id, roomNo, roomType, description, price FROM rooms ORDER BY ABS(roomNo) ASC");
+		
+		$rooms = array();
+		while ($row = $res->fetch_assoc()) {
+			$rooms[] = $row;
+		}
+		$res->close();
+		$con->close();
+		return $rooms;
+	}
+
+
+	//boiler plate
+	public function save_record($table, $fields, $values) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare();
+		$res->close();
+		$con->close();
+	}
+	
+	public function createGuest($data) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("INSERT INTO guests (fullname, citizenship, dob, contact_no, email, company, position)
+			VALUES (?, ?, ?, ?, ?, ?, ?)");
+		$res->bind_param("sssssss", $this->strToDb($data->fullname), $this->strToDb($data->citizenship), $this->toMysqlDateTime($data->dob), 
+						$data->contact_no, $data->email, $this->strToDb($data->company), $this->strToDb($data->position));
+		$res->execute();
+		$res->close();		
+		$lastId = $this->getLastId($con);
+		$con->close();
+		return $lastId;
+	}
+
+	public function updateGuest($data) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("UPDATE guests SET fullname = ?, citizenship = ?, dob = ?, contact_no = ?, email = ?, company = ?, position = ? WHERE id = ?");
+		$res->bind_param("sssssssi", $this->strToDb($data->fullname), $this->strToDb($data->citizenship), $this->toMysqlDateTime($data->dob), 
+						$data->contact_no, $data->email, $this->strToDb($data->company), $this->strToDb($data->position), $data->id);		
+		$res->execute();
+		$res->close();		
+		$con->close();		
+	}
+
+	public function getGuests($search="") {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$where = " WHERE fullname like '%$search%' ";
+		$res = $con->query("SELECT * FROM guests $where ORDER BY fullname");
+		$data = array();
+		while ($row = $res->fetch_assoc()) {
+			$row['dob'] = $this->toRegDate($row['dob'], 'm/d/Y');
+			$data[] = $row;
+		}
+		$res->close();
+		$con->close();
+		return $data;
+	}
+
+	public function getGuest($id=0) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$where = " WHERE id = $id ";		
+		$res = $con->query("SELECT * FROM guests $where ORDER BY fullname");
+		$data = array();
+		while ($row = $res->fetch_assoc()) {
+			$data = $row;
+		}
+		$data['dob'] = $this->toRegDate($data['dob'], 'm/d/Y');
+		$res->close();
+		$con->close();
+		return $data;
+	}
+
+	public function deleteGuest($id) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("DELETE FROM guests WHERE id = ?");
+		$res->bind_param("i", $id);		
+		$result = $res->execute();
+		$res->close();		
+		$con->close();
+		return $result;
+	}
+
+	public function getAvailableRooms($checkinDate, $checkoutDate) {
+		//get all rooms
+		$rooms = array();
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->query("SELECT * FROM rooms ORDER BY id");		
+		while ($row = $res->fetch_assoc()) {
+			$rooms[] = $row;
+		}
+		$res->close();		
+
+		//get used rooms within the given period
+		$roomsUsed = array();
+		$inDate = $this->toMysqlDateTime($checkinDate);
+		$outDate = $this->toMysqlDateTime($checkoutDate);
+		$res = $con->query("
+			SELECT roomId FROM checkins
+			WHERE
+				-- status = 'ACTIVE' AND
+				(
+					checkin BETWEEN '$inDate' AND '$outDate'
+					OR checkout BETWEEN '$inDate' AND '$outDate'
+					OR '$inDate' BETWEEN checkin AND checkout
+					OR '$outDate' BETWEEN checkin AND checkout
+				)
+			ORDER BY roomId DESC				
+		");
+		
+		while ($row = $res->fetch_assoc()) {
+			$roomsUsed[] = $row['roomId'];
+		}
+		$res->close();
+
+		//get reserved rooms
+		$roomsReserved = array();
+		$res = $con->query("
+			-- SELECT roomType, COUNT(*) as Total FROM reservations
+			SELECT roomId FROM reservations
+			WHERE
+				-- status = 'ACTIVE' AND
+				(
+					checkIn BETWEEN '$inDate' AND '$outDate'
+					OR checkOut BETWEEN '$inDate' AND '$outDate'
+					OR '$inDate' BETWEEN checkIn AND checkOut
+					OR '$outDate' BETWEEN checkIn AND checkOut
+				)
+			ORDER BY roomId DESC
+		");						
+		while ($row = $res->fetch_assoc()) {
+			$roomsReserved[] = $row['roomId'];
+		}
+		$res->close();		
+		$roomsAvailable = array();
+		//error_log($roomsUsed[0] . " -- " . $roomsReserved[0]);
+		error_log(count($rooms));
+		//get all vacant rooms
+		if (count($roomsUsed) > 0 || count($roomsReserved) > 0) {
+			//for ($i=0;$i<count($rooms);$i++) {						
+			while (count($rooms) > 0) {
+				//if $tmpRoom doesn't contain any room, exit this loop (no room is in used)
+				//$room = $rooms[$i];		
+				$room = array_pop($rooms);
+				//error_log($i . ' = ' .$room['id']);	
+				if (!in_array($room['id'], $roomsUsed) && !in_array($room['id'], $roomsReserved)) {	//or rooms id matches a reserved room's id for the given period
+					$roomsAvailable[] = $room;
+				}										
+			}
+		} else {
+			$roomsAvailable = $rooms;
+		}
+
+		//print_r($roomsUsed);
+		//$roomsAvailable = array_values($roomsAvailable);				//re index array		
+		$con->close();
+		return $roomsAvailable;
+								
+	}
+		
+	//checkin records ==================================================
+	public function createCheckin($data) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("INSERT INTO checkins (guestId, checkin, checkout, roomId, status, roomPrice, pax, children)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+		$res->bind_param("issisiii", $data->guestId, $this->toMysqlDateTime($data->checkIn), 
+						$this->toMysqlDateTime($data->checkOut), 
+						$data->roomId, $data->status, $data->roomPrice, $data->pax, $data->children);
+		$res->execute();
+		$res->close();		
+		$lastId = $this->getLastId($con);
+		//error_log(print_r($data));
+		$res = $con->prepare("INSERT INTO charges (description, amount, qty, qty_cost, name, action, checkinId, date)
+								VALUES ('Room Charge', ?, 1, ?, 'Room Charge', 1, ?, ?)");
+		$res->bind_param('iiis', $data->roomPrice, $data->roomPrice, $lastId, $this->toMysqlDateTime($data->checkIn));
+		$res->execute();
+		$res->close();
+		
+		$con->close();
+		return $lastId;
+	}
+
+	public function updateCheckin($data) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("UPDATE checkins SET guestId=?, checkin=?, checkout=?, roomId=?, status=?, roomPrice=?, pax=?, children=? WHERE id=?");
+		$res->bind_param("issisiiii", $data->guestId, $this->toMysqlDateTime($data->checkIn), 
+						$this->toMysqlDateTime($data->checkOut), 
+						$data->roomId, $data->status, $data->roomPrice, $data->pax, $data->children, $data->id);
+		$res->execute();
+		$res->close();		
+		$con->close();		
+	}
+	
+	public function getCheckins($arg) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$filter = "";
+		
+		if (!isset($arg)) {
+			$where = "";		
+			$res = $con->query("SELECT x.id, guestId, checkIn, checkOut, roomId, status, roomPrice, y.fullname, z.roomNo, pax, children
+							FROM checkins AS x, guests AS y, rooms AS z
+							WHERE y.id = guestId AND z.id = roomId $filter");
+		} else if (isset($arg['report'])) {
+			$from = $this->toMysqlDateTime($arg['cinFrom']);
+			$to = $this->toMysqlDateTime($arg['cinTo']);
+			$res = $con->query("SELECT x.id, guestId, checkIn, checkOut, roomId, status, roomPrice, y.fullname, z.roomNo, pax, children
+							FROM checkins AS x, guests AS y, rooms AS z
+							WHERE y.id = guestId AND z.id = roomId
+							AND checkIn BETWEEN '$from' AND '$to'
+							");
+		} else {
+			$where = array();
+			if (isset($arg['status'])) {
+				$where[] = " x.status = '" . $arg['status'] . "' ";
+			}
+			
+			if (isset($arg['cinFrom'])) {
+				$from = $this->toMysqlDateTime($arg['cinFrom']);
+				$to = $this->toMysqlDateTime($arg['cinTo']);
+				$where[] = " checkIn BETWEEN '$from' AND '$to' ";
+			}
+			
+			if (isset($arg['cinName'])) {
+				$cinName = $arg['cinName'];
+				$where[] = " y.fullname LIKE '%$cinName%' ";
+			}
+			
+			$filter = implode(" AND ", $where);
+			$filter = " AND " . $filter;		
+			
+			if (!isset($arg['FOR_BLOCKINGS'])) {
+				$res = $con->query("SELECT x.id, guestId, checkIn, checkOut, roomId, status, roomPrice, y.fullname, z.roomNo, pax, children
+							FROM checkins AS x, guests AS y, rooms AS z
+							WHERE y.id = guestId AND z.id = roomId $filter");
+			} else {
+				$res = $con->query("SELECT x.id, guestId, checkIn, checkOut, roomId, status, roomPrice, y.fullname, z.roomNo, pax, children
+							FROM checkins AS x, guests AS y, rooms AS z
+							WHERE y.id = guestId AND z.id = roomId 
+							AND (
+							checkIn BETWEEN '$from' AND '$to' OR
+							checkOut BETWEEN '$from' AND '$to' OR
+							'$from' BETWEEN checkIn AND checkOut OR
+							'$to' BETWEEN checkIn AND checkOut
+							)
+						");
+			}
+		}
+				
+		
+		$data = array();
+		while ($row = $res->fetch_assoc()) {
+			$row['checkIn'] = $this->toRegDate($row['checkIn']);
+			$row['checkOut'] = $this->toRegDate($row['checkOut']);
+			$data[] = $row;
+		}
+		$res->close();
+		$con->close();
+		return $data;
+	}
+
+	public function getCheckin($id=0) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->query("SELECT guestId, checkIn, checkOut, roomId, status, roomPrice, y.fullname, z.roomNo, pax, children
+							FROM checkins AS x, guests AS y, rooms AS z
+							WHERE y.id = guestId AND z.id = roomId AND id = $id");
+		$data = array();
+		while ($row = $res->fetch_assoc()) {
+			$data = $row;
+		}
+		$data['checkIn'] = $this->toRegDate($data['checkIn']);
+		$data['checkOut'] = $this->toRegDate($data['checkOut']);
+		$res->close();
+		$con->close();
+		return $data;
+	}
+
+	public function deleteCheckin($id=0) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("DELETE FROM checkins WHERE id = ?");
+		$res->bind_param("i", $id);		
+		$result = $res->execute();
+		$res->close();		
+		$con->close();
+		return $result;
+	}
+
+	//gets all charge of checkinid========================
+	//~ public function getCharges($checkinId=0) {
+		//~ $con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		//~ $res = $con->query("SELECT description, amount, qty, qty_cost, name, action, checkinId, date FROM charges WHERE checkinId = $checkinId ORDER BY date ASC");
+		//~ $charges = array();
+		//~ while ($row = $res->fetch_assoc()) {
+			//~ $charges[] = $row;
+		//~ }		
+		//~ $res->close();
+		//~ $con->close();
+		//~ 
+		//~ $recurr = array();
+		//~ $data = array();	//main data holder;
+		//~ 
+		//~ //process charges
+		//~ $interval = new DateInterval("P1D");							//create interval object for "Days"
+		//~ foreach ($charges AS $i => $charge) {							//loop over all charges
+																		//~ //get current item
+			//~ if (count($recurr) > 0) {									//check if recurring list has data <RL>
+				//~ $initdate = date_create($recurr[0]['date']);
+				//~ $lastdate = date_create($charge['date']);
+				//~ $diff = date_diff($initdate, $lastdate);
+							//~ 
+				//~ if ($diff->invert != 1 && $diff->days > 0) { 										//yes : 	check date of recursion. if <RL> date < current date, "print all recursion data from recurring 
+					//~ 
+					//~ while (date_diff($initdate, $lastdate)->days > 0) {
+						//~ for ($a=0;$a<count($recurr);$a++) {
+							//~ $recurr[$a]['date'] = $initdate->format('m/d/Y');
+							//~ $data[] = $recurr[$a];						//printing recurring charges for each day until the current date is reached (lastdate)
+						//~ }	
+						//~ date_add($initdate, $interval);					//start date up to the day before the current date". 
+					//~ }													//and change all dates of recurring charges to current date, 
+					//~ for ($a=0;$a<count($recurr);$a++) {
+						//~ $recurr[$a]['date'] = $lastdate->format('m/d/Y');
+					//~ }
+				//~ }
+				//~ 
+			//~ }
+		//~ 
+			//~ if ($charge['action'] != 0) {			//check if current item is recurring charge or return. 
+		//~ //		yes	:	add to recurring items, (date adding new recurring item, check for same item on the list and add/deduct to total charge and qty) 
+		//~ //				possible for rented/returned items/charges e.g. pillow, bed, fan, etc...
+				//~ if ($charge['action'] == 1) { 		//1 = recurring charge
+					//~ //add to list only
+					//~ $update = false;
+					//~ for ($a=0;$a<count($recurr);$a++) {
+						//~ if ($charge['name'] == $recurr[$a]['name']) {
+							//~ $recurr[$a]['qty'] += $charge['qty'];
+							//~ $recurr[$a]['amount'] += $charge['amount'];
+							//~ $update = true;
+							//~ break;
+						//~ }
+					//~ }
+					//~ if (!$update) $recurr[] = $charge;
+				//~ } else {							//2 = returned item
+					//~ //update same record to recurring charge
+					//~ for ($a=0;$a<count($recurr);$a++) {
+						//~ if ($charge['name'] == $recurr[$a]['name']) {
+							//~ $recurr[$a]['qty'] -= $charge['qty'];
+							//~ $recurr[$a]['amount'] -= $charge['amount'];
+							//~ if ($recurr[$a]['qty'] == 0) unset($recurr[$a]);
+							//~ break;
+						//~ }
+					//~ }
+					//~ $data[] = $charge;
+				//~ }
+			//~ } else {								//		no	: 	print charge
+				//~ $data[] = $charge;
+			//~ }
+		//~ 
+		//~ }
+		//~ 
+			//~ //print out remaining info from list of recurring charges
+			//~ if (count($recurr) > 0) {									//check if recurring list has data <RL>
+				//~ $initdate = date_create($recurr[0]['date']);
+				//~ $lastdate = date_create();
+				//~ $diff = date_diff($initdate, $lastdate);
+				//~ 
+				//~ if ($diff->invert != 1 && $diff->days > 0) { 										//yes : 	check date of recursion. if <RL> date < current date, "print all recursion data from recurring 
+					//~ 
+					//~ while (date_diff($initdate, $lastdate)->days > 0) {
+						//~ for ($a=0;$a<count($recurr);$a++) {
+							//~ $recurr[$a]['date'] = $initdate->format('M-d-Y');
+							//~ $data[] = $recurr[$a];						//printing recurring charges for each day until the current date is reached (lastdate)
+						//~ }	
+						//~ date_add($initdate, $interval);					//start date up to the day before the current date". 
+					//~ }					
+				//~ }
+				//~ 
+			//~ }
+		//~ 
+		//~ //print_r($recurr);
+		//~ 
+		//~ return $data;
+	//~ }
+
+
+	//CHARGES METHODS ==================================================
+	public function createCharge($data) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		
+		$res = $con->prepare("INSERT INTO charges (description, amount, qty, qty_cost, name, action, checkinId, date)
+								VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+		$res->bind_param('siiisiis', $this->strToDb($data->description), 
+										$data->amount, 
+										$data->qty, 
+										$data->qty_cost, 
+										$data->name, 
+										$data->action, 
+										$data->checkinId, 
+										$this->toMysqlDateTime($data->date)
+						);
+		$res->execute();
+		$res->close();
+		$lastId = $this->getLastId($con);		
+		$con->close();
+		return $lastId;
+	}
+
+	public function updateCharge($data) {
+		error_log("log it " . $data->qty_cost);
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("UPDATE charges SET description=?, amount=?, qty=?, qty_cost=?, name=?, date=? WHERE id=?");
+		$res->bind_param("siiissi", $data->description, $data->amount, 
+									$data->qty, $data->qty_cost, $data->name,
+									$this->toMysqlDateTime($data->date), $data->id);
+		$res->execute();
+		$res->close();		
+		$con->close();		
+	}
+
+	public function getCharges($arg) {		
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		
+		if (isset($arg['report'])) {
+			$from = $this->toMysqlDateTime($arg['cinFrom']);
+			$to = $this->toMysqlDateTime($arg['cinTo']);
+			$res = $con->query("SELECT charges.id, description, amount, qty, qty_cost, name, action, checkinId, date, fullname 
+								FROM 
+									charges, checkins, guests
+								WHERE
+									charges.checkinid = checkins.id AND	guests.id = checkins.guestid AND
+									charges.date BETWEEN '$from' AND '$to' 
+								ORDER BY date ASC");
+		} else {	//query was called by checkin form, gets charges for a specific guest
+			$checkinId = $arg;
+			$res = $con->query("SELECT id, description, amount, qty, qty_cost, name, action, checkinId, date FROM charges WHERE checkinId = $checkinId ORDER BY date ASC");
+		}
+		$charges = array();
+		while ($row = $res->fetch_assoc()) {
+			$charges[] = $row;
+		}		
+		$res->close();
+		$con->close();		
+		return $charges;
+	}
+	
+	
+	
+	public function deleteCharge($id) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("DELETE FROM charges WHERE id = ?");
+		$res->bind_param("i", $id);		
+		$result = $res->execute();
+		$res->close();		
+		$con->close();
+		return $result;
+	}
+	
+	
+	
+	//RESERVATION FUNCTIONS ===========================================================
+	public function createReservation($data) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("INSERT INTO reservations (guestId, checkIn, checkOut, roomId, status, pax, children, deposit, roomPrice)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		$res->bind_param("issisiiii", $data->guestId, $this->toMysqlDateTime($data->checkIn), 
+						$this->toMysqlDateTime($data->checkOut), 
+						$data->roomId, $data->status, $data->pax, $data->children, $data->deposit, $data->roomPrice);
+		$res->execute();
+		$res->close();		
+		$lastId = $this->getLastId($con);
+		
+		$con->close();
+		return $lastId;
+	}
+	
+	public function updateReservation($data) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("UPDATE reservations SET guestId=?, checkin=?, checkout=?, roomId=?, status=?, roomPrice=?, pax=?, children=?, deposit=? WHERE id=?");
+		$res->bind_param("issisiiiii", $data->guestId, $this->toMysqlDateTime($data->checkIn), 
+						$this->toMysqlDateTime($data->checkOut), 
+						$data->roomId, $data->status, $data->roomPrice, $data->pax, $data->children, $data->deposit, $data->id);
+		$res->execute();
+		$res->close();		
+		$con->close();		
+	}
+	
+	
+	public function deleteReservation($id) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->prepare("DELETE FROM reservations WHERE id = ?");
+		$res->bind_param("i", $id);		
+		$result = $res->execute();
+		$res->close();		
+		$con->close();
+		return $result;
+	}
+
+	public function getReservation($id=0) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$res = $con->query("SELECT guestId, checkIn, checkOut, roomId, status, roomPrice, y.fullname, z.roomNo, pax, children, roomPrice
+							FROM reservations AS x, guests AS y, rooms AS z
+							WHERE y.id = guestId AND z.id = roomId AND id = $id");
+		$data = array();
+		while ($row = $res->fetch_assoc()) {
+			$data = $row;
+		}
+		$data['checkIn'] = $this->toRegDate($data['checkIn']);
+		$data['checkOut'] = $this->toRegDate($data['checkOut']);
+		$res->close();
+		$con->close();
+		return $data;
+	}
+	
+	public function getReservations($arg) {
+		$con = new mysqli($this->db_host, $this->db_user, $this->db_pwd, $this->db_name);
+		$filter = "";
+		
+		if (!isset($arg) || count($arg) == 0) {
+			$where = "";		
+		} else if (isset($arg['report'])) {
+			error_log($arg);
+			$from = $this->toMysqlDateTime($arg['cinFrom']);
+			$to = $this->toMysqlDateTime($arg['cinTo']);
+			$filter = " AND checkIn BETWEEN '$from' AND '$to'";			
+		} else {
+			//~ $where = array();
+			//~ if (isset($arg['status'])) {
+				//~ $where[] = " x.status = '" . $arg['status'] . "' ";
+			//~ }
+			
+			if (isset($arg['cinFrom'])) {
+				$from = $this->toMysqlDateTime($arg['cinFrom']);
+				$to = $this->toMysqlDateTime($arg['cinTo']);
+				$where[] = " (checkIn BETWEEN '$from' AND '$to' OR checkOut BETWEEN '$from' AND '$to' OR " . 
+				" '$from' BETWEEN checkIn and checkOut OR '$to' BETWEEN checkIn AND checkOut) ";
+			}
+			
+			//~ if (isset($arg['cinName'])) {
+				//~ $cinName = $arg['cinName'];
+				//~ $where[] = " y.fullname LIKE '%$cinName%' ";
+			//~ }
+			
+			$filter = implode(" AND ", $where);
+			$filter = " AND " . $filter;		
+			//error_log($filter);
+		}
+		
+		$res = $con->query("SELECT x.id, guestId, checkIn, checkOut, roomId, status, deposit, y.fullname, z.roomNo, pax, children, roomPrice
+							FROM reservations AS x, guests AS y, rooms AS z
+							WHERE y.id = guestId AND z.id = roomId $filter");
+		$data = array();
+		while ($row = $res->fetch_assoc()) {
+			$row['checkIn'] = $this->toRegDate($row['checkIn']);
+			$row['checkOut'] = $this->toRegDate($row['checkOut']);
+			$data[] = $row;
+		}
+		//print_r($data);
+		$res->close();
+		$con->close();
+		return $data;
+	}
+	
+	
+}
+
+?>
